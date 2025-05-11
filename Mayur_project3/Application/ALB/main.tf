@@ -10,33 +10,44 @@ data "aws_subnets" "all" {
 }
 
 resource "aws_security_group" "alb_sg" {
-  name        = "alb-sg"
-  description = "Security Group for ALB"
+  name        = var.sg_name
+  description = var.sg_description
   vpc_id      = data.aws_subnet.ec2_subnet.vpc_id
 
   ingress {
-    from_port   = 80
-    to_port     = 80
-    protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    from_port   = var.sg_ingress_from_port
+    to_port     = var.sg_ingress_to_port
+    protocol    = var.sg_ingress_protocol
+    cidr_blocks = var.sg_ingress_cidr_blocks
   }
 
   egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
+    from_port   = var.sg_egress_from_port
+    to_port     = var.sg_egress_to_port
+    protocol    = var.sg_egress_protocol
+    cidr_blocks = var.sg_egress_cidr_blocks
   }
 
-  tags = {
-    Name = "alb-sg"
-  }
+  tags = var.sg_tags
 }
 
 module "alb" {
-  source          = "../../Modules/ALB/V0"
-  alb_name        = "FQTS-alb"
-  tg_name         = "FQTS-tg"
+  source = "../../Modules/ALB/V0"
+
+  alb_name     = var.alb_name
+  alb_internal = var.alb_internal
+  alb_type     = var.alb_type
+  alb_tags     = var.alb_tags
+
+  tg_name     = var.tg_name
+  tg_port     = var.tg_port
+  tg_protocol = var.tg_protocol
+  tg_tags     = var.tg_tags
+
+  listener_port        = var.listener_port
+  listener_protocol    = var.listener_protocol
+  listener_action_type = var.listener_action_type
+
   vpc_id          = data.aws_subnet.ec2_subnet.vpc_id
   subnet_ids      = data.aws_subnets.all.ids
   security_groups = [aws_security_group.alb_sg.id]
