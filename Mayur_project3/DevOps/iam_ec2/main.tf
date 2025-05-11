@@ -90,6 +90,17 @@ data "aws_iam_policy_document" "extended_ec2_policy" {
       ]
     }
   }
+
+  # S3 Permissions for Terraform state access
+  statement {
+    effect  = "Allow"
+    actions = ["s3:GetObject", "s3:PutObject", "s3:ListBucket", "s3:DeleteObject"]
+    resources = [
+      "arn:aws:s3:::mayur-devops-bucket-fqts",
+      "arn:aws:s3:::mayur-devops-bucket-fqts/env/dev/terraform.tfstate",
+      "arn:aws:s3:::mayur-devops-bucket-fqts/env/dev/terraform.tfstate.tflock" # Lock file permission added
+    ]
+  }
 }
 
 resource "aws_iam_policy" "extended_ec2_policy" {
@@ -101,4 +112,3 @@ resource "aws_iam_role_policy_attachment" "extended_attachment" {
   role       = module.iam_role.role_name
   policy_arn = aws_iam_policy.extended_ec2_policy.arn
 }
-
