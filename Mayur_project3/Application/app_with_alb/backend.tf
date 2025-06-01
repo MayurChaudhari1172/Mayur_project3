@@ -6,7 +6,7 @@ terraform {
     }
   }
   backend "s3" {
-    bucket       = "mayur-devops-bucket-fqts"
+    bucket       = "new-mayur-devops-bucket-fqts"
     key          = "env/dev/terraform.tfstate"
     region       = "us-east-1"
     encrypt      = true

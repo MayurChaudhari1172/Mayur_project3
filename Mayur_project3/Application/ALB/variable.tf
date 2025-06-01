@@ -1,42 +1,46 @@
-variable "ec2_subnet_id" {
-  type        = string
-  description = "Subnet ID used to derive VPC and subnet list"
+variable "vpc_id" {
+  type = string
 }
-
+variable "subnet_ids" {
+  type = list(string)
+}
+variable "security_groups" {
+  type = list(string)
+}
 # Security Group
-variable "sg_name" {
-  type = string
-}
-variable "sg_description" {
-  type = string
-}
-variable "sg_ingress_from_port" {
-  type = number
-}
-variable "sg_ingress_to_port" {
-  type = number
-}
-variable "sg_ingress_protocol" {
-  type = string
-}
-variable "sg_ingress_cidr_blocks" {
-  type = list(string)
-}
-variable "sg_egress_from_port" {
-  type = number
-}
-variable "sg_egress_to_port" {
-  type = number
-}
-variable "sg_egress_protocol" {
-  type = string
-}
-variable "sg_egress_cidr_blocks" {
-  type = list(string)
-}
-variable "sg_tags" {
-  type = map(string)
-}
+# variable "sg_name" {
+#   type = string
+# }
+# variable "sg_description" {
+#   type = string
+# }
+# variable "sg_ingress_from_port" {
+#   type = number
+# }
+# variable "sg_ingress_to_port" {
+#   type = number
+# }
+# variable "sg_ingress_protocol" {
+#   type = string
+# }
+# variable "sg_ingress_cidr_blocks" {
+#   type = list(string)
+# }
+# variable "sg_egress_from_port" {
+#   type = number
+# }
+# variable "sg_egress_to_port" {
+#   type = number
+# }
+# variable "sg_egress_protocol" {
+#   type = string
+# }
+# variable "sg_egress_cidr_blocks" {
+#   type = list(string)
+# }
+# variable "sg_tags" {
+#   type = map(string)
+# }
 
 # ALB
 variable "alb_name" {

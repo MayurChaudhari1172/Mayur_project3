@@ -1,35 +1,26 @@
-data "aws_subnet" "ec2_subnet" {
-  id = var.ec2_subnet_id
-}
 
-data "aws_subnets" "all" {
-  filter {
-    name   = "vpc-id"
-    values = [data.aws_subnet.ec2_subnet.vpc_id]
-  }
-}
 
-resource "aws_security_group" "alb_sg" {
-  name        = var.sg_name
-  description = var.sg_description
-  vpc_id      = data.aws_subnet.ec2_subnet.vpc_id
+# resource "aws_security_group" "alb_sg" {
+#   name        = var.sg_name
+#   description = var.sg_description
+#   vpc_id      = data.aws_subnet.ec2_subnet.vpc_id
 
-  ingress {
-    from_port   = var.sg_ingress_from_port
-    to_port     = var.sg_ingress_to_port
-    protocol    = var.sg_ingress_protocol
-    cidr_blocks = var.sg_ingress_cidr_blocks
-  }
+#   ingress {
+#     from_port   = var.sg_ingress_from_port
+#     to_port     = var.sg_ingress_to_port
+#     protocol    = var.sg_ingress_protocol
+#     cidr_blocks = var.sg_ingress_cidr_blocks
+#   }
 
-  egress {
-    from_port   = var.sg_egress_from_port
-    to_port     = var.sg_egress_to_port
-    protocol    = var.sg_egress_protocol
-    cidr_blocks = var.sg_egress_cidr_blocks
-  }
+#   egress {
+#     from_port   = var.sg_egress_from_port
+#     to_port     = var.sg_egress_to_port
+#     protocol    = var.sg_egress_protocol
+#     cidr_blocks = var.sg_egress_cidr_blocks
+#   }
 
-  tags = var.sg_tags
-}
+#   tags = var.sg_tags
+# }
 
 module "alb" {
   source = "../../Modules/ALB/V0"
@@ -48,9 +39,10 @@ module "alb" {
   listener_protocol    = var.listener_protocol
   listener_action_type = var.listener_action_type
 
-  vpc_id          = data.aws_subnet.ec2_subnet.vpc_id
-  subnet_ids      = data.aws_subnets.all.ids
-  security_groups = [aws_security_group.alb_sg.id]
+  vpc_id          = var.vpc_id
+  subnet_ids      = var.subnet_ids
+  security_groups = var.security_groups
+
 
   health_check_path     = var.health_check_path
   health_check_interval = var.health_check_interval

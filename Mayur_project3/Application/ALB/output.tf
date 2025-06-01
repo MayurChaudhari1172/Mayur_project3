@@ -12,8 +12,6 @@ output "alb_listener_arn" {
   description = "ARN of the ALB Listener"
   value       = module.alb.listener_arn
 }
-
-output "alb_target_group_arn" {
-  description = "ARN of the ALB Target Group"
-  value       = module.alb.target_group_arn
+output "target_group_arn" {
+  value = aws_lb_target_group.this.arn
 }

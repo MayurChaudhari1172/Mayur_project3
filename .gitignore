@@ -408,3 +408,4 @@ FodyWeavers.xsd
 terraform.tfstate
 terraform.tfstate.backup
 
+*.backup

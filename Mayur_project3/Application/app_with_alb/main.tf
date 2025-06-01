@@ -19,25 +19,15 @@ module "application_ec2" {
 }
 
 module "alb" {
-  source = "../ALB"
+  source = "../../Modules/ALB/V0"
 
-  ec2_subnet_id          = var.ec2_subnet_id
-  sg_name                = var.sg_name
-  sg_description         = var.sg_description
-  sg_ingress_from_port   = var.sg_ingress_from_port
-  sg_ingress_to_port     = var.sg_ingress_to_port
-  sg_ingress_protocol    = var.sg_ingress_protocol
-  sg_ingress_cidr_blocks = var.sg_ingress_cidr_blocks
-  sg_egress_from_port    = var.sg_egress_from_port
-  sg_egress_to_port      = var.sg_egress_to_port
-  sg_egress_protocol     = var.sg_egress_protocol
-  sg_egress_cidr_blocks  = var.sg_egress_cidr_blocks
-  sg_tags                = var.sg_tags
-
-  alb_name     = var.alb_name
-  alb_internal = var.alb_internal
-  alb_type     = var.alb_type
-  alb_tags     = var.alb_tags
+  alb_name        = var.alb_name
+  alb_internal    = var.alb_internal
+  alb_type        = var.alb_type
+  alb_tags        = var.alb_tags
+  vpc_id          = var.vpc_id
+  subnet_ids      = var.subnet_ids
+  security_groups = var.security_groups
 
   tg_name     = var.tg_name
   tg_port     = var.tg_port
@@ -56,7 +46,7 @@ module "alb" {
 }
 
 resource "aws_lb_target_group_attachment" "app_tg_attachment" {
-  target_group_arn = module.alb.alb_target_group_arn
+  target_group_arn = module.alb.target_group_arn
   target_id        = module.application_ec2.instance_id
-  port             = 80
+  port             = 8080
 }

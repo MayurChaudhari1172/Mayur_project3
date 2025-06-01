@@ -13,6 +13,7 @@ resource "aws_lb_target_group" "this" {
   protocol = var.tg_protocol
   vpc_id   = var.vpc_id
   health_check {
+    port                = var.tg_port
     path                = var.health_check_path
     interval            = var.health_check_interval
     timeout             = var.health_check_timeout

@@ -1,8 +1,8 @@
-ami                    = "ami-04681163a08179f28"
+ami                    = "ami-0953476d60561c955"
 instance_type          = "t2.micro"
-vpc_security_group_ids = ["sg-0a2b79b94d4b38288"]
-key_name               = "Mayur_Key_Pair"
-subnet_id              = "subnet-0034c59563dfabecd"
+vpc_security_group_ids = ["sg-0c7eb9f00f0d010bc"]
+key_name               = "Key-Pair-Punam"
+subnet_id              = "subnet-0240a86a8ee3c206d"
 iam_instance_profile   = "fqts-proj3-iam-role-profile"
 name                   = "jenkins-ec2"
 project_name           = "DevOps"
