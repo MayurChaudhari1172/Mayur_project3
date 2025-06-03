@@ -42,7 +42,7 @@ listener_protocol    = "HTTP"
 listener_action_type = "forward"
 
 # Health Check
-health_check_path     = "/"
+health_check_path     = "/health.html"
 health_check_interval = 30
 health_check_timeout  = 5
 healthy_threshold     = 2
