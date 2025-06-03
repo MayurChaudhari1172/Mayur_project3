@@ -1,5 +1,5 @@
 # EC2 values
-ami                    = "ami-0953476d60561c955"
+ami                    = "ami-0554aa6767e249943"
 instance_type          = "t2.micro"
 vpc_security_group_ids = ["sg-0c7eb9f00f0d010bc"]
 key_name               = "Key-Pair-Punam"
@@ -49,4 +49,4 @@ healthy_threshold     = 2
 unhealthy_threshold   = 2
 
 vpc_id     = "vpc-0b5257a147240a7c2"
-subnet_ids = ["subnet-0240a86a8ee3c206d"] # List of ALB subnets
+subnet_ids = ["subnet-0240a86a8ee3c206d", "subnet-0eae2211a022cebd2"] # List of ALB subnets
