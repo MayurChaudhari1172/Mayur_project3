@@ -1,0 +1,107 @@
+- name: Build and Start Student Management Application
+  hosts: tag_Name__app_alb_asg
+  become: yes
+  vars:
+    frontend_home: /opt/student_mgmt/frontend
+    backend_home: /opt/student_mgmt/backend
+    react_port: 3000
+
+  tasks:
+    - name: Kill existing Node process (port {{ react_port }})
+      shell: lsof -ti:{{ react_port }} | xargs -r kill -9
+      ignore_errors: yes
+
+    - name: Ensure required packages
+      yum:
+        name:
+          - git
+          - nodejs
+        state: present
+
+    - name: Remove old application if exists
+      file:
+        path: /opt/student_mgmt
+        state: absent
+
+    - name: Clone application repository
+      git:
+        repo: https://github.com/MayurChaudhari1172/student_mgmt.git
+        dest: /opt/student_mgmt
+        version: main
+
+    - name: Set ownership to ansadmin
+      file:
+        path: /opt/student_mgmt
+        owner: ansadmin
+        group: ansadmin
+        recurse: yes
+
+    - name: Create .env file for frontend
+      copy:
+        dest: "{{ frontend_home }}/.env"
+        content: |
+          REACT_APP_API_URL="http://fqts-alb-app-1423661211.us-east-1.elb.amazonaws.com/api"
+        owner: ansadmin
+        group: ansadmin
+        mode: '0644'
+
+    - name: Copy backend config file
+      template:
+        src: templates/application.properties.j2
+        dest: "{{ backend_home }}/src/main/resources/application.properties"
+        owner: ansadmin
+        group: ansadmin
+        mode: '0644'
+
+    - name: Build backend (Spring Boot)
+      become_user: ansadmin
+      shell: |
+        export PATH=$PATH:/opt/maven/bin
+        cd {{ backend_home }}
+        mvn clean install
+      args:
+        executable: /bin/bash
+
+    - name: Start backend in background
+      become_user: ansadmin
+      shell: |
+        export PATH=$PATH:/opt/maven/bin
+        cd {{ backend_home }}
+        nohup mvn spring-boot:run > {{ backend_home }}/backend.log 2>&1 &
+      args:
+        executable: /bin/bash
+
+    - name: Install frontend dependencies
+      become_user: ansadmin
+      shell: |
+        cd {{ frontend_home }}
+        npm install
+      args:
+        executable: /bin/bash
+
+    - name: Build frontend
+      become_user: ansadmin
+      shell: |
+        cd {{ frontend_home }}
+        npm run build
+      args:
+        executable: /bin/bash
+
+    - name: Install serve for ansadmin user locally
+      become_user: ansadmin
+      shell: |
+        npm config set prefix ~/.npm-global
+        export PATH=$HOME/.npm-global/bin:$PATH
+        npm install serve -g
+      args:
+        executable: /bin/bash
+
+    - name: Start frontend using serve (production)
+      become_user: ansadmin
+      shell: |
+        export PATH=$HOME/.npm-global/bin:$PATH
+        cd {{ frontend_home }}
+        nohup /home/ansadmin/.npm-global/bin/serve -s build -l {{ react_port }} > {{ frontend_home }}/frontend.log 2>&1 &
+      args:
+        executable: /bin/bash
+

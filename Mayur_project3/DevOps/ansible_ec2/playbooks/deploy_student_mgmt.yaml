@@ -1,0 +1,4 @@
+- import_playbook: setup_java_maven.yaml
+- import_playbook: setup_node.yaml
+- import_playbook: setup_mysql.yaml
+- import_playbook: start_application.yaml

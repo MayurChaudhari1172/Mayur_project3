@@ -1,0 +1,14 @@
+- name: Install Node.js 16
+  hosts: tag_Name__app_alb_asg
+  become: yes
+  tasks:
+    - name: Add Node.js 16 repo
+      shell: curl -fsSL https://rpm.nodesource.com/setup_16.x | bash -
+      args:
+        executable: /bin/bash
+
+    - name: Install Node.js
+      yum:
+        name: nodejs
+        state: present
+
