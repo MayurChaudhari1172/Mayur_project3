@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        TF_WORKING_DIR = 'Mayur_project3/Application/alb_with_asg'  // ✅ Your actual folder path
+        TF_WORKING_DIR = 'Mayur_project3/Application/alb_with_asg'
     }
 
     stages {
@@ -20,14 +20,10 @@ pipeline {
             }
         }
 
-        stage('Terraform Import') {
+        stage('Terraform Validate') {
             steps {
                 dir("${TF_WORKING_DIR}") {
-                    sh '''
-                        terraform import "module.alb.aws_lb.this" arn:aws:elasticloadbalancing:us-east-1:183295447311:loadbalancer/app/FQTS-alb-app/c7418bddba06c076 || true
-                        terraform import "module.alb.aws_lb_target_group.frontend_tg" arn:aws:elasticloadbalancing:us-east-1:183295447311:targetgroup/FQTS-alb-app-frontend/20c4e1da65322a39 || true
-                        terraform import "module.alb.aws_lb_target_group.backend_tg" arn:aws:elasticloadbalancing:us-east-1:183295447311:targetgroup/FQTS-alb-app-backend/9ec3b45ef5df77b8 || true
-                    '''
+                    sh 'terraform validate'
                 }
             }
         }
