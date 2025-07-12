@@ -1,0 +1,40 @@
+pipeline {
+    agent any
+
+    environment {
+        TF_WORKING_DIR = 'Mayur_project3/Application/app_with_alb'  // ✅ Your actual folder path
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git branch: 'main', url: 'https://github.com/MayurChaudhari1172/Mayur_project3.git'
+            }
+        }
+
+        stage('Terraform Init') {
+            steps {
+                dir("${TF_WORKING_DIR}") {
+                    sh 'terraform init'
+                }
+            }
+        }
+
+        stage('Terraform Plan') {
+            steps {
+                dir("${TF_WORKING_DIR}") {
+                    sh 'terraform plan -var-file="dev.tfvars"'
+                }
+            }
+        }
+
+        stage('Terraform Apply') {
+            steps {
+                dir("${TF_WORKING_DIR}") {
+                    input message: "Approve to Apply?"
+                    sh 'terraform apply -auto-approve -var-file="dev.tfvars"'
+                }
+            }
+        }
+    }
+}

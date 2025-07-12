@@ -1,0 +1,7 @@
+ami_id                = "ami-0554aa6767e249943"
+instance_type         = "t2.micro"
+key_name              = "Key-Pair-Punam"
+subnet_id             = "subnet-0240a86a8ee3c206d"
+security_group_id     = "sg-0c7eb9f00f0d010bc"
+bootstrap_script_path = "scripts/bootstrap.sh"
+iam_instance_profile  = "fqts-proj3-iam-role-profile"
