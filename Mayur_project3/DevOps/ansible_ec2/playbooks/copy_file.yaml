@@ -1,0 +1,10 @@
+---
+- name: Copy a file to Application EC2
+  hosts: tag_Name__app_alb_asg
+  become: true
+  tasks:
+    - name: Copy example.txt to /tmp/ on EC2
+      copy:
+        src: ~/ansible/example.txt
+        dest: /tmp/example.txt
+

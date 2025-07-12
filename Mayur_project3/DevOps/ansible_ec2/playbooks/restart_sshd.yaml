@@ -1,0 +1,10 @@
+---
+- name: Restart sshd service on Application EC2
+  hosts: tag_Name__app_alb_asg
+  become: true
+  tasks:
+    - name: Restart sshd service
+      service:
+        name: sshd
+        state: restarted
+

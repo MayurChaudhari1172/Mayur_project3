@@ -1,0 +1,50 @@
+- name: Install Java 17 and Maven
+  hosts: tag_Name__app_alb_asg
+  become: yes
+  tasks:
+    - name: Install Java 17
+      yum:
+        name: java-17-amazon-corretto
+        state: present
+
+    - name: Set JAVA_HOME
+      lineinfile:
+        path: /etc/profile
+        line: 'export JAVA_HOME=/usr/lib/jvm/java-17-amazon-corretto'
+        state: present
+
+    - name: Set PATH for JAVA_HOME
+      lineinfile:
+        path: /etc/profile
+        line: 'export PATH=$JAVA_HOME/bin:$PATH'
+        state: present
+
+    - name: Download Maven
+      get_url:
+        url: https://dlcdn.apache.org/maven/maven-3/3.9.10/binaries/apache-maven-3.9.10-bin.tar.gz
+        dest: /opt/apache-maven-3.9.10-bin.tar.gz
+
+    - name: Extract Maven
+      unarchive:
+        src: /opt/apache-maven-3.9.10-bin.tar.gz
+        dest: /opt
+        remote_src: yes
+
+    - name: Create Maven symlink
+      file:
+        src: /opt/apache-maven-3.9.10
+        dest: /opt/maven
+        state: link
+
+    - name: Set M2_HOME
+      lineinfile:
+        path: /etc/profile
+        line: 'export M2_HOME=/opt/maven'
+        state: present
+
+    - name: Set PATH for Maven
+      lineinfile:
+        path: /etc/profile
+        line: 'export PATH=$M2_HOME/bin:$PATH'
+        state: present
+

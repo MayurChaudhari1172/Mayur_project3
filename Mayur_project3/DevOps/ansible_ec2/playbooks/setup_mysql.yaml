@@ -1,0 +1,77 @@
+- name: Install and Configure MySQL
+  hosts: tag_Name__app_alb_asg
+  become: yes
+  vars:
+    ansible_python_interpreter: /usr/bin/python3
+    mysql_root_new_password: "Admin@123"
+
+  tasks:
+    - name: Download MySQL repo RPM
+      get_url:
+        url: https://repo.mysql.com//mysql80-community-release-el7-11.noarch.rpm
+        dest: /tmp/mysql80-community-release-el7-11.noarch.rpm
+
+    - name: Install MySQL repo
+      yum:
+        name: /tmp/mysql80-community-release-el7-11.noarch.rpm
+        state: present
+
+    - name: Install MySQL server
+      yum:
+        name: mysql-community-server
+        state: present
+
+    - name: Start and enable MySQL
+      systemd:
+        name: mysqld
+        state: started
+        enabled: yes
+
+    - name: Wait for MySQL to initialize
+      wait_for:
+        port: 3306
+        delay: 5
+        timeout: 60
+
+    - name: Install python3-pip
+      yum:
+        name: python3-pip
+        state: present
+
+    - name: Install PyMySQL
+      pip:
+        name: PyMySQL
+        executable: pip3
+
+    - name: Install cryptography package
+      pip:
+        name: cryptography
+        executable: pip3
+
+    - name: Try logging in with new password
+      shell: |
+        mysql -uroot -p'{{ mysql_root_new_password }}' -e "SELECT 1;"
+      register: mysql_root_check
+      ignore_errors: yes
+      no_log: true
+
+    - name: Get temporary root password (only if login with new password fails)
+      shell: grep 'temporary password' /var/log/mysqld.log | tail -1 | awk '{print $NF}'
+      when: mysql_root_check.rc != 0
+      register: mysql_temp_pass
+      no_log: true
+
+    - name: Reset root password using temporary password (only on first run)
+      shell: |
+        mysql --connect-expired-password -uroot -p'{{ mysql_temp_pass.stdout }}' \
+        -e "ALTER USER 'root'@'localhost' IDENTIFIED BY '{{ mysql_root_new_password }}';"
+      when: mysql_root_check.rc != 0
+      no_log: true
+
+    - name: Create student_db database
+      community.mysql.mysql_db:
+        name: student_db
+        state: present
+        login_user: root
+        login_password: "{{ mysql_root_new_password }}"
+
