@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        TF_WORKING_DIR = 'Mayur_project3/Application/alb_with_asg'
+        TF_WORKING_DIR = 'Mayur_project3/Application/jenkins-test-node'
     }
 
     stages {
