@@ -1,8 +1,15 @@
 pipeline {
     agent any
 
+    parameters {
+        booleanParam(name: 'DESTROY_INFRA', defaultValue: false, description: 'Destroy infrastructure?')
+        choice(name: 'ENV', choices: ['dev', 'qa', 'prod'], description: 'Environment to deploy/destroy')
+        string(name: 'SCHEDULED_TTL_TAG', defaultValue: '', description: 'Optional TTL tag (auto-cleanup)')
+    }
+
     environment {
-        TF_WORKING_DIR = 'Mayur_project3/Application/jenkins-test-node'
+        TF_WORKING_DIR = "Mayur_project3/Application/jenkins-test-node"
+        TF_VAR_FILE = "${params.ENV}.tfvars"
     }
 
     stages {
@@ -28,18 +35,19 @@ pipeline {
             }
         }
 
-        stage('Terraform Plan') {
+        stage('Terraform Plan or Destroy') {
             steps {
                 dir("${TF_WORKING_DIR}") {
-                    sh 'terraform plan -var-file="dev.tfvars"'
-                }
-            }
-        }
-
-        stage('Terraform Apply') {
-            steps {
-                dir("${TF_WORKING_DIR}") {
-                    sh 'terraform apply -auto-approve -var-file="dev.tfvars"'
+                    script {
+                        if (params.DESTROY_INFRA || env.BUILD_CAUSE == "TIMERTRIGGER") {
+                            // Auto destroy for TTL or manual destroy
+                            echo "Running Terraform Destroy for ${params.ENV}..."
+                            sh "terraform destroy -auto-approve -var-file=\"${TF_VAR_FILE}\""
+                        } else {
+                            echo "Running Terraform Apply for ${params.ENV}..."
+                            sh "terraform apply -auto-approve -var-file=\"${TF_VAR_FILE}\""
+                        }
+                    }
                 }
             }
         }
