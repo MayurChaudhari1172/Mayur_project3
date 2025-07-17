@@ -9,7 +9,7 @@ pipeline {
 
     environment {
         TF_WORKING_DIR = "Mayur_project3/Application/jenkins-test-node"
-        TF_VAR_FILE = "${params.ENV}.tfvars"
+        // ⚠️ Removed dynamic assignment of TF_VAR_FILE from here
     }
 
     stages {
@@ -39,13 +39,14 @@ pipeline {
             steps {
                 dir("${TF_WORKING_DIR}") {
                     script {
+                        def tfVarFile = "${params.ENV}.tfvars"
+
                         if (params.DESTROY_INFRA || env.BUILD_CAUSE == "TIMERTRIGGER") {
-                            // Auto destroy for TTL or manual destroy
                             echo "Running Terraform Destroy for ${params.ENV}..."
-                            sh "terraform destroy -auto-approve -var-file=\"${TF_VAR_FILE}\""
+                            sh "terraform destroy -auto-approve -var-file='${tfVarFile}'"
                         } else {
                             echo "Running Terraform Apply for ${params.ENV}..."
-                            sh "terraform apply -auto-approve -var-file=\"${TF_VAR_FILE}\""
+                            sh "terraform apply -auto-approve -var-file='${tfVarFile}'"
                         }
                     }
                 }
