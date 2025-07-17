@@ -1,15 +1,15 @@
 dev:
-  alb_with_asg:
-    enabled: true
-    disabled: false
-    path: Application/alb_with_asg
-    tfvars: Application/alb_with_asg/dev.tfvars
+  # alb_with_asg:
+  #   enabled: true
+  #   disabled: false
+  #   path: Application/alb_with_asg
+  #   tfvars: Application/alb_with_asg/dev.tfvars
 
-  app_with_alb:
-    enabled: false
-    disabled: true
-    path: Application/app_with_alb
-    tfvars: Application/app_with_alb/dev.tfvars
+  # app_with_alb:
+  #   enabled: false
+  #   disabled: true
+  #   path: Application/app_with_alb
+  #   tfvars: Application/app_with_alb/dev.tfvars
 
   jenkins_test_node:
     enabled: true
