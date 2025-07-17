@@ -1,9 +1,0 @@
-ami                  = "ami-0554aa6767e249943"    # You can use a separate AMI for stage if needed
-instance_type        = "t2.micro"                 # Or t3.micro if preferred
-subnet_id            = "subnet-0240a86a8ee3c206d" # Replace with stage subnet if different
-security_group_ids   = ["sg-0640df8db79727a94"]   # Replace if you have stage-specific SG
-key_name             = "Key-Pair-Punam"
-iam_instance_profile = "Punam-fqts-proj3-iam-role-profile"
-name                 = "jenkins-test-node-stage"
-project              = "project-3-devops"
-environment          = "stage"
