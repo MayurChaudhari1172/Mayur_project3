@@ -1,0 +1,9 @@
+ami                  = "ami-0554aa6767e249943"    # Replace with prod AMI if required
+instance_type        = "t3.micro"                 # Slightly more powerful for prod
+subnet_id            = "subnet-0240a86a8ee3c206d" # Replace with prod subnet
+security_group_ids   = ["sg-0640df8db79727a94"]   # Replace if needed
+key_name             = "Key-Pair-Punam"
+iam_instance_profile = "Punam-fqts-proj3-iam-role-profile"
+name                 = "jenkins-test-node-prod"
+project              = "project-3-devops"
+environment          = "prod"
