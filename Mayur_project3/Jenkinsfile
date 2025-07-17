@@ -3,19 +3,16 @@ pipeline {
 
     parameters {
         booleanParam(name: 'DESTROY_INFRA', defaultValue: false, description: 'Destroy infrastructure?')
-        choice(name: 'ENV', choices: ['dev', 'qa', 'prod'], description: 'Environment to deploy/destroy')
-        string(name: 'SCHEDULED_TTL_TAG', defaultValue: '', description: 'Optional TTL tag (auto-cleanup)')
     }
 
     environment {
         TF_WORKING_DIR = "Mayur_project3/Application/jenkins-test-node"
-        // ⚠️ Removed dynamic assignment of TF_VAR_FILE from here
     }
 
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/MayurChaudhari1172/Mayur_project3.git'
+                git branch: "${env.BRANCH_NAME}", url: 'https://github.com/MayurChaudhari1172/Mayur_project3.git'
             }
         }
 
@@ -39,13 +36,13 @@ pipeline {
             steps {
                 dir("${TF_WORKING_DIR}") {
                     script {
-                        def tfVarFile = "${params.ENV}.tfvars"
+                        def tfVarFile = "${env.BRANCH_NAME}.tfvars"
 
                         if (params.DESTROY_INFRA || env.BUILD_CAUSE == "TIMERTRIGGER") {
-                            echo "Running Terraform Destroy for ${params.ENV}..."
+                            echo "Running Terraform Destroy for ${env.BRANCH_NAME}..."
                             sh "terraform destroy -auto-approve -var-file='${tfVarFile}'"
                         } else {
-                            echo "Running Terraform Apply for ${params.ENV}..."
+                            echo "Running Terraform Apply for ${env.BRANCH_NAME}..."
                             sh "terraform apply -auto-approve -var-file='${tfVarFile}'"
                         }
                     }
