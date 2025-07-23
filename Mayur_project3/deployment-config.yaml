@@ -11,29 +11,33 @@
   #   path: Application/app_with_alb
   #   tfvars: Application/app_with_alb/dev.tfvars
 dev:
-  jenkins_test_node:
-    enabled: false
-    disabled: false
-    path: Application/jenkins-test-node
-    tfvars: Application/jenkins-test-node/dev.tfvars
+  modules:
+    jenkins_test_node:
+      enabled: false
+      disabled: false
+      path: Application/jenkins-test-node
+      tfvars: Application/jenkins-test-node/dev.tfvars
 stage:
-  jenkins_test_node:
-    enabled: false
-    disabled: false
-    path: Application/jenkins-test-node
-    tfvars: Application/jenkins-test-node/stage.tfvars
+  modules:
+    jenkins_test_node:
+      enabled: false
+      disabled: false
+      path: Application/jenkins-test-node
+      tfvars: Application/jenkins-test-node/stage.tfvars
 main:
-  jenkins_test_node:
-    enabled: false
-    disabled: false
-    path: Application/jenkins-test-node
-    tfvars: Application/jenkins-test-node/main.tfvars
+  modules:
+    jenkins_test_node:
+      enabled: false
+      disabled: false
+      path: Application/jenkins-test-node
+      tfvars: Application/jenkins-test-node/main.tfvars
 feature:
-  jenkins_test_node:
-    enabled: true
-    disabled: false
-    path: Application/jenkins-test-node
-    tfvars: Application/jenkins-test-node/feature.tfvars
+  modules:
+    jenkins_test_node:
+      enabled: true
+      disabled: false
+      path: Application/jenkins-test-node
+      tfvars: Application/jenkins-test-node/feature.tfvars
 
 # stage:
 #   alb_with_asg:
