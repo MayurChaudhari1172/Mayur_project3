@@ -1,4 +1,4 @@
-def CONFIG_FILE = 'Mayur_project3/deployment-config.yaml'
+def CONFIG_FILE = 'Mayur_project3/deployment.config'
 
 pipeline {
     agent any
@@ -30,11 +30,16 @@ pipeline {
             }
             steps {
                 script {
-                    echo "🚀 Running Terraform Init & Plan for branch: ${env.BRANCH_NAME}"
-                    def modules = CONFIG['dev']  // Always use dev for plan on feature
+                    echo "🚀 Running Terraform Init & Plan for feature branch: ${env.BRANCH_NAME}"
+
+                    def modules = CONFIG['dev']
+                    if (!modules) {
+                        error "❌ No 'dev' section found in config"
+                    }
 
                     modules.each { name, config ->
                         if (config.enabled && !config.disabled) {
+                            echo "▶ Running plan for: ${name}"
                             dir(config.path) {
                                 withEnv(["TF_IN_AUTOMATION=true"]) {
                                     sh "terraform init"
@@ -45,6 +50,8 @@ pipeline {
                                     }
                                 }
                             }
+                        } else {
+                            echo "⏩ Skipping module '${name}' - not enabled"
                         }
                     }
                 }
@@ -61,14 +68,18 @@ pipeline {
                 script {
                     echo "🚀 Running Terraform Apply for branch: ${env.BRANCH_NAME}"
 
-                    // Approval required for stage/main
                     if (['stage', 'main'].contains(env.BRANCH_NAME)) {
                         input message: "🔒 Approve Apply for ${env.BRANCH_NAME}?"
                     }
 
                     def modules = CONFIG[env.BRANCH_NAME]
+                    if (!modules) {
+                        error "❌ No '${env.BRANCH_NAME}' section found in config"
+                    }
+
                     modules.each { name, config ->
                         if (config.enabled && !config.disabled) {
+                            echo "▶ Running apply for: ${name}"
                             dir(config.path) {
                                 withEnv(["TF_IN_AUTOMATION=true"]) {
                                     sh "terraform init"
@@ -79,6 +90,8 @@ pipeline {
                                     }
                                 }
                             }
+                        } else {
+                            echo "⏩ Skipping module '${name}' - not enabled"
                         }
                     }
                 }
