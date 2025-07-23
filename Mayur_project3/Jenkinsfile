@@ -36,7 +36,11 @@ pipeline {
                             dir(config.path) {
                                 withEnv(["TF_IN_AUTOMATION=true"]) {
                                     sh "terraform init"
-                                    sh "terraform plan -var-file=${config.tfvars} -input=false"
+                                    if (config.containsKey('tfvars') && config.tfvars) {
+                                        sh "terraform plan -var-file=${config.tfvars} -input=false"
+                                    } else {
+                                        sh "terraform plan -input=false"
+                                    }
                                 }
                             }
                         }
@@ -48,19 +52,26 @@ pipeline {
         stage('Terraform Apply') {
             when {
                 expression {
-                    return env.BRANCH_NAME == 'stage' || env.BRANCH_NAME == 'main'
+                    return env.BRANCH_NAME == 'dev' || env.BRANCH_NAME == 'stage' || env.BRANCH_NAME == 'main'
                 }
             }
             steps {
-                input message: "Approve Apply for ${env.BRANCH_NAME}?"
                 script {
+                    if (env.BRANCH_NAME == 'stage' || env.BRANCH_NAME == 'main') {
+                        input message: "Approve Apply for ${env.BRANCH_NAME}?"
+                    }
+
                     def modules = CONFIG[env.BRANCH_NAME]
                     modules.each { name, config ->
                         if (config.enabled && !config.disabled) {
                             dir(config.path) {
                                 withEnv(["TF_IN_AUTOMATION=true"]) {
                                     sh "terraform init"
-                                    sh "terraform apply -var-file=${config.tfvars} -auto-approve"
+                                    if (config.containsKey('tfvars') && config.tfvars) {
+                                        sh "terraform apply -var-file=${config.tfvars} -auto-approve"
+                                    } else {
+                                        sh "terraform apply -auto-approve"
+                                    }
                                 }
                             }
                         }
@@ -72,10 +83,10 @@ pipeline {
 
     post {
         failure {
-            echo "Terraform pipeline failed for ${env.BRANCH_NAME}"
+            echo "❌ Terraform pipeline failed for ${env.BRANCH_NAME}"
         }
         success {
-            echo "Terraform pipeline completed successfully for ${env.BRANCH_NAME}"
+            echo "✅ Terraform pipeline completed successfully for ${env.BRANCH_NAME}"
         }
     }
 }
