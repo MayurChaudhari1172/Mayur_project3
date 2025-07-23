@@ -1,4 +1,4 @@
-def CONFIG_FILE = 'deployment-config.yaml'
+def CONFIG_FILE = 'Mayur_project3/deployment-config.yaml'
 
 pipeline {
     agent any
@@ -13,6 +13,9 @@ pipeline {
             steps {
                 checkout scm
                 script {
+                    if (!fileExists(CONFIG_FILE)) {
+                        error "❌ Config file not found at ${CONFIG_FILE}"
+                    }
                     CONFIG = readYaml(file: CONFIG_FILE)
                 }
             }
