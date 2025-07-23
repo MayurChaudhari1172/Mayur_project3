@@ -12,7 +12,6 @@ pipeline {
         stage('Checkout') {
             steps {
                 script {
-                    // ✅ Clean Checkout
                     checkout([
                         $class: 'GitSCM',
                         branches: [[name: "*/${env.BRANCH_NAME}"]],
@@ -41,9 +40,9 @@ pipeline {
                 script {
                     echo "🚀 Running Terraform Init & Plan for feature branch: ${env.BRANCH_NAME}"
 
-                    def modules = CONFIG[env.BRANCH_NAME]
+                    def modules = CONFIG[env.BRANCH_NAME]?.modules
                     if (!modules) {
-                        error "❌ No '${env.BRANCH_NAME}' section found in config"
+                        error "❌ No 'modules' section found under ${env.BRANCH_NAME} in config"
                     }
 
                     modules.each { name, config ->
@@ -52,8 +51,6 @@ pipeline {
                             dir(config.path) {
                                 withEnv(["TF_IN_AUTOMATION=true"]) {
                                     sh "terraform init"
-
-                                    // ✅ Print current directory and check if tfvars file exists
                                     sh "echo '📁 Current dir:' && pwd && ls -l"
                                     if (config.containsKey('tfvars') && config.tfvars) {
                                         sh "echo '🔍 Looking for tfvars at: ${config.tfvars}'"
@@ -88,9 +85,9 @@ pipeline {
                         input message: "🔒 Approve Apply for ${env.BRANCH_NAME}?"
                     }
 
-                    def modules = CONFIG[env.BRANCH_NAME]
+                    def modules = CONFIG[env.BRANCH_NAME]?.modules
                     if (!modules) {
-                        error "❌ No '${env.BRANCH_NAME}' section found in config"
+                        error "❌ No 'modules' section found under ${env.BRANCH_NAME} in config"
                     }
 
                     modules.each { name, config ->
