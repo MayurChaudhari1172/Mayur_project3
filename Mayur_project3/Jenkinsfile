@@ -1,53 +1,97 @@
+def CONFIG_FILE = 'Mayur_project3/deployment-config.yaml'
+
 pipeline {
     agent any
 
-    parameters {
-        booleanParam(name: 'DESTROY_INFRA', defaultValue: false, description: 'Destroy infrastructure?')
-    }
-
     environment {
-        TF_WORKING_DIR = "Mayur_project3/Application/jenkins-test-node"
+        TF_VERSION = '1.7.5'
+        AWS_DEFAULT_REGION = 'us-east-1'
     }
 
     stages {
         stage('Checkout') {
             steps {
-                git branch: "${env.BRANCH_NAME}", url: 'https://github.com/MayurChaudhari1172/Mayur_project3.git'
-            }
-        }
-
-        stage('Terraform Init') {
-            steps {
-                dir("${TF_WORKING_DIR}") {
-                    sh 'terraform init'
+                checkout scm
+                script {
+                    echo "🔍 Branch detected: ${env.BRANCH_NAME}"
+                    if (!fileExists(CONFIG_FILE)) {
+                        error "❌ Config file not found at ${CONFIG_FILE}"
+                    }
+                    CONFIG = readYaml(file: CONFIG_FILE)
                 }
             }
         }
 
-        stage('Terraform Validate') {
-            steps {
-                dir("${TF_WORKING_DIR}") {
-                    sh 'terraform validate'
+        stage('Terraform Init & Plan') {
+            when {
+                expression {
+                    return env.BRANCH_NAME?.startsWith('feature')
                 }
             }
-        }
-
-        stage('Terraform Plan or Destroy') {
             steps {
-                dir("${TF_WORKING_DIR}") {
-                    script {
-                        def tfVarFile = "${env.BRANCH_NAME}.tfvars"
+                script {
+                    echo "🚀 Running Terraform Init & Plan for branch: ${env.BRANCH_NAME}"
+                    def modules = CONFIG['dev']  // Always use dev for plan on feature
 
-                        if (params.DESTROY_INFRA || env.BUILD_CAUSE == "TIMERTRIGGER") {
-                            echo "Running Terraform Destroy for ${env.BRANCH_NAME}..."
-                            sh "terraform destroy -auto-approve -var-file='${tfVarFile}'"
-                        } else {
-                            echo "Running Terraform Apply for ${env.BRANCH_NAME}..."
-                            sh "terraform apply -auto-approve -var-file='${tfVarFile}'"
+                    modules.each { name, config ->
+                        if (config.enabled && !config.disabled) {
+                            dir(config.path) {
+                                withEnv(["TF_IN_AUTOMATION=true"]) {
+                                    sh "terraform init"
+                                    if (config.containsKey('tfvars') && config.tfvars) {
+                                        sh "terraform plan -var-file=${config.tfvars} -input=false"
+                                    } else {
+                                        sh "terraform plan -input=false"
+                                    }
+                                }
+                            }
                         }
                     }
                 }
             }
+        }
+
+        stage('Terraform Apply') {
+            when {
+                expression {
+                    return ['dev', 'stage', 'main'].contains(env.BRANCH_NAME)
+                }
+            }
+            steps {
+                script {
+                    echo "🚀 Running Terraform Apply for branch: ${env.BRANCH_NAME}"
+
+                    // Approval required for stage/main
+                    if (['stage', 'main'].contains(env.BRANCH_NAME)) {
+                        input message: "🔒 Approve Apply for ${env.BRANCH_NAME}?"
+                    }
+
+                    def modules = CONFIG[env.BRANCH_NAME]
+                    modules.each { name, config ->
+                        if (config.enabled && !config.disabled) {
+                            dir(config.path) {
+                                withEnv(["TF_IN_AUTOMATION=true"]) {
+                                    sh "terraform init"
+                                    if (config.containsKey('tfvars') && config.tfvars) {
+                                        sh "terraform apply -var-file=${config.tfvars} -auto-approve"
+                                    } else {
+                                        sh "terraform apply -auto-approve"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        failure {
+            echo "❌ Terraform pipeline failed for ${env.BRANCH_NAME}"
+        }
+        success {
+            echo "✅ Terraform pipeline completed successfully for ${env.BRANCH_NAME}"
         }
     }
 }
