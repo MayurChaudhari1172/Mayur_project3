@@ -16,7 +16,7 @@ pipeline {
                     checkout([
                         $class: 'GitSCM',
                         branches: [[name: "*/${env.BRANCH_NAME}"]],
-                        userRemoteConfigs: [[url: 'https://github.com/mayurchaudhari083/Project-3-DevOps-code.git']],
+                        userRemoteConfigs: [[url: 'https://github.com/MayurChaudhari1172/Mayur_project3.git']],
                         extensions: [[$class: 'CleanCheckout']]
                     ])
 

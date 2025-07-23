@@ -33,7 +33,7 @@ feature:
     enabled: true
     disabled: false
     path: Application/jenkins-test-node
-    tfvars: feature.tfvars
+    tfvars: Application/jenkins-test-node/feature.tfvars
 
 # stage:
 #   alb_with_asg:
