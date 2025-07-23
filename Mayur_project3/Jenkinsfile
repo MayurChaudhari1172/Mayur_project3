@@ -24,13 +24,12 @@ pipeline {
         stage('Terraform Init & Plan') {
             when {
                 expression {
-                    return env.BRANCH_NAME.startsWith('feature/') || env.BRANCH_NAME == 'dev'
+                    return env.BRANCH_NAME.startsWith('feature/')
                 }
             }
             steps {
                 script {
-                    def envKey = env.BRANCH_NAME.startsWith('feature/') ? 'dev' : env.BRANCH_NAME
-                    def modules = CONFIG[envKey]
+                    def modules = CONFIG['dev'] // feature branches always use dev tfvars
 
                     modules.each { name, config ->
                         if (config.enabled && !config.disabled) {
@@ -53,12 +52,13 @@ pipeline {
         stage('Terraform Apply') {
             when {
                 expression {
-                    return env.BRANCH_NAME == 'dev' || env.BRANCH_NAME == 'stage' || env.BRANCH_NAME == 'main'
+                    return ['dev', 'stage', 'main'].contains(env.BRANCH_NAME)
                 }
             }
             steps {
                 script {
-                    if (env.BRANCH_NAME == 'stage' || env.BRANCH_NAME == 'main') {
+                    // Manual approval for stage/main
+                    if (['stage', 'main'].contains(env.BRANCH_NAME)) {
                         input message: "Approve Apply for ${env.BRANCH_NAME}?"
                     }
 
