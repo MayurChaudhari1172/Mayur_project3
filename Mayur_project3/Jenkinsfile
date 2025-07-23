@@ -11,12 +11,21 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                checkout scm
                 script {
+                    // ✅ Clean Checkout
+                    checkout([
+                        $class: 'GitSCM',
+                        branches: [[name: "*/${env.BRANCH_NAME}"]],
+                        userRemoteConfigs: [[url: 'https://github.com/mayurchaudhari083/Project-3-DevOps-code.git']],
+                        extensions: [[$class: 'CleanCheckout']]
+                    ])
+
                     echo "🔍 Branch detected: ${env.BRANCH_NAME}"
+
                     if (!fileExists(CONFIG_FILE)) {
                         error "❌ Config file not found at ${CONFIG_FILE}"
                     }
+
                     CONFIG = readYaml(file: CONFIG_FILE)
                 }
             }
@@ -43,7 +52,14 @@ pipeline {
                             dir(config.path) {
                                 withEnv(["TF_IN_AUTOMATION=true"]) {
                                     sh "terraform init"
+
+                                    // ✅ Print current directory and check if tfvars file exists
+                                    sh "echo '📁 Current dir:' && pwd && ls -l"
                                     if (config.containsKey('tfvars') && config.tfvars) {
+                                        sh "echo '🔍 Looking for tfvars at: ${config.tfvars}'"
+                                        if (!fileExists(config.tfvars)) {
+                                            error "❌ tfvars file '${config.tfvars}' not found in ${config.path}"
+                                        }
                                         sh "terraform plan -var-file=${config.tfvars} -input=false"
                                     } else {
                                         sh "terraform plan -input=false"
@@ -83,7 +99,12 @@ pipeline {
                             dir(config.path) {
                                 withEnv(["TF_IN_AUTOMATION=true"]) {
                                     sh "terraform init"
+                                    sh "echo '📁 Current dir:' && pwd && ls -l"
                                     if (config.containsKey('tfvars') && config.tfvars) {
+                                        sh "echo '🔍 Looking for tfvars at: ${config.tfvars}'"
+                                        if (!fileExists(config.tfvars)) {
+                                            error "❌ tfvars file '${config.tfvars}' not found in ${config.path}"
+                                        }
                                         sh "terraform apply -var-file=${config.tfvars} -auto-approve"
                                     } else {
                                         sh "terraform apply -auto-approve"
