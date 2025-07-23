@@ -13,6 +13,7 @@ pipeline {
             steps {
                 checkout scm
                 script {
+                    echo "🔍 Branch detected: ${env.BRANCH_NAME}"
                     if (!fileExists(CONFIG_FILE)) {
                         error "❌ Config file not found at ${CONFIG_FILE}"
                     }
@@ -24,12 +25,13 @@ pipeline {
         stage('Terraform Init & Plan') {
             when {
                 expression {
-                    return env.BRANCH_NAME.startsWith('feature/')
+                    return env.BRANCH_NAME?.startsWith('feature')
                 }
             }
             steps {
                 script {
-                    def modules = CONFIG['dev'] // feature branches always use dev tfvars
+                    echo "🚀 Running Terraform Init & Plan for branch: ${env.BRANCH_NAME}"
+                    def modules = CONFIG['dev']  // Always use dev for plan on feature
 
                     modules.each { name, config ->
                         if (config.enabled && !config.disabled) {
@@ -57,9 +59,11 @@ pipeline {
             }
             steps {
                 script {
-                    // Manual approval for stage/main
+                    echo "🚀 Running Terraform Apply for branch: ${env.BRANCH_NAME}"
+
+                    // Approval required for stage/main
                     if (['stage', 'main'].contains(env.BRANCH_NAME)) {
-                        input message: "Approve Apply for ${env.BRANCH_NAME}?"
+                        input message: "🔒 Approve Apply for ${env.BRANCH_NAME}?"
                     }
 
                     def modules = CONFIG[env.BRANCH_NAME]
