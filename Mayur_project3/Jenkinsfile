@@ -1,5 +1,3 @@
-@Library('terraform-pipeline-lib') _  // optional: only if you use shared libs
-
 def CONFIG_FILE = 'deployment-config.yaml'
 
 pipeline {
