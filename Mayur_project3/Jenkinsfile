@@ -1,5 +1,4 @@
 def CONFIG_FILE = 'Mayur_project3/deployment-config.yaml'
-//def CONFIG_FILE = 'deployment-config.yaml'
 
 pipeline {
     agent any
@@ -33,9 +32,9 @@ pipeline {
                 script {
                     echo "🚀 Running Terraform Init & Plan for feature branch: ${env.BRANCH_NAME}"
 
-                    def modules = CONFIG['dev']
+                    def modules = CONFIG[env.BRANCH_NAME]
                     if (!modules) {
-                        error "❌ No 'dev' section found in config"
+                        error "❌ No '${env.BRANCH_NAME}' section found in config"
                     }
 
                     modules.each { name, config ->
