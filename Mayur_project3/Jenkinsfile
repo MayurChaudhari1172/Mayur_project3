@@ -1,4 +1,7 @@
-def CONFIG_FILE = 'Mayur_project3/deployment-config.yaml'
+def CONFIG_FILE = 'deployment-config.yaml'
+
+
+//def CONFIG_FILE = 'Mayur_project3/deployment-config.yaml'
 
 pipeline {
     agent any
