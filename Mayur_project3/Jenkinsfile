@@ -1,131 +1,68 @@
-//def CONFIG_FILE = 'deployment-config.yaml'
-
-
-def CONFIG_FILE = 'Mayur_project3/deployment-config.yaml'
-
 pipeline {
-    agent any
-
-    environment {
-        TF_VERSION = '1.7.5'
-        AWS_DEFAULT_REGION = 'us-east-1'
+  agent any
+ 
+  environment {
+    YAML_CONFIG = 'deployment-config.yaml'
+  }
+ 
+  stages {
+    stage('Init') {
+      steps {
+        script {
+          echo "🔍 Branch: ${env.BRANCH_NAME}"
+ 
+          if (env.BRANCH_NAME.startsWith("PR-")) {
+            echo "🛠️ Detected PR from '${env.CHANGE_BRANCH}' to '${env.CHANGE_TARGET}'"
+            currentBuild.displayName = "#${env.BUILD_NUMBER} - PR from ${env.CHANGE_BRANCH} to ${env.CHANGE_TARGET}"
+            env.ENV_NAME = env.CHANGE_TARGET
+            env.IS_PR = 'true'
+          } else {
+            echo "🧪 Regular branch build: ${env.BRANCH_NAME}"
+            env.ENV_NAME = env.BRANCH_NAME
+            env.IS_PR = 'false'
+          }
+        }
+      }
     }
-
-    stages {
-        stage('Checkout') {
-            steps {
-                script {
-                    checkout([
-                        $class: 'GitSCM',
-                        branches: [[name: "*/${env.BRANCH_NAME}"]],
-                        userRemoteConfigs: [[url: 'https://github.com/MayurChaudhari1172/Mayur_project3.git']],
-                        extensions: [[$class: 'CleanCheckout']]
-                    ])
-
-                    echo "🔍 Branch detected: ${env.BRANCH_NAME}"
-
-                    if (!fileExists(CONFIG_FILE)) {
-                        error "❌ Config file not found at ${CONFIG_FILE}"
-                    }
-
-                    CONFIG = readYaml(file: CONFIG_FILE)
+ 
+    stage('Terraform Plan / Apply') {
+      steps {
+        script {
+          def config = readYaml file: "${YAML_CONFIG}"
+          def envConfig = config[env.ENV_NAME]
+ 
+          if (envConfig == null) {
+            error "❌ No config found for environment: ${env.ENV_NAME}"
+          }
+ 
+          envConfig.each { componentName, component ->
+            if (component.enable == true && component.disable == false) {
+              echo "🚀 Running ${env.IS_PR == 'true' ? 'terraform plan' : 'terraform apply'} for: ${componentName}"
+              dir("${component.path}") {
+                sh "terraform init"
+                sh "terraform validate"
+                sh "terraform plan -var-file=${component.tfvars}"
+                if (env.IS_PR != 'true') {
+                  sh "terraform apply -auto-approve -var-file=${component.tfvars}"
+                } else {
+                  echo "💡 PR build: Skipping terraform apply"
                 }
+              }
+            } else {
+              echo "⏭️ Skipping ${componentName} (enable: ${component.enable}, disable: ${component.disable})"
             }
+          }
         }
-
-        stage('Terraform Init & Plan') {
-            when {
-                expression {
-                    return env.BRANCH_NAME?.startsWith('feature')
-                }
-            }
-            steps {
-                script {
-                    echo "🚀 Running Terraform Init & Plan for feature branch: ${env.BRANCH_NAME}"
-
-                    def modules = CONFIG[env.BRANCH_NAME]?.modules
-                    if (!modules) {
-                        error "❌ No 'modules' section found under ${env.BRANCH_NAME} in config"
-                    }
-
-                    modules.each { name, config ->
-                        if (config.enabled && !config.disabled) {
-                            echo "▶ Running plan for: ${name}"
-                            dir(config.path) {
-                                withEnv(["TF_IN_AUTOMATION=true"]) {
-                                    sh "terraform init"
-                                    sh "echo '📁 Current dir:' && pwd && ls -l"
-                                    if (config.containsKey('tfvars') && config.tfvars) {
-                                        sh "echo '🔍 Looking for tfvars at: ${config.tfvars}'"
-                                        if (!fileExists(config.tfvars)) {
-                                            error "❌ tfvars file '${config.tfvars}' not found in ${config.path}"
-                                        }
-                                        sh "terraform plan -var-file=${config.tfvars} -input=false"
-                                    } else {
-                                        sh "terraform plan -input=false"
-                                    }
-                                }
-                            }
-                        } else {
-                            echo "⏩ Skipping module '${name}' - not enabled"
-                        }
-                    }
-                }
-            }
-        }
-
-        stage('Terraform Apply') {
-            when {
-                expression {
-                    return ['dev', 'stage', 'main'].contains(env.BRANCH_NAME)
-                }
-            }
-            steps {
-                script {
-                    echo "🚀 Running Terraform Apply for branch: ${env.BRANCH_NAME}"
-
-                    if (['stage', 'main'].contains(env.BRANCH_NAME)) {
-                        input message: "🔒 Approve Apply for ${env.BRANCH_NAME}?"
-                    }
-
-                    def modules = CONFIG[env.BRANCH_NAME]?.modules
-                    if (!modules) {
-                        error "❌ No 'modules' section found under ${env.BRANCH_NAME} in config"
-                    }
-
-                    modules.each { name, config ->
-                        if (config.enabled && !config.disabled) {
-                            echo "▶ Running apply for: ${name}"
-                            dir(config.path) {
-                                withEnv(["TF_IN_AUTOMATION=true"]) {
-                                    sh "terraform init"
-                                    sh "echo '📁 Current dir:' && pwd && ls -l"
-                                    if (config.containsKey('tfvars') && config.tfvars) {
-                                        sh "echo '🔍 Looking for tfvars at: ${config.tfvars}'"
-                                        if (!fileExists(config.tfvars)) {
-                                            error "❌ tfvars file '${config.tfvars}' not found in ${config.path}"
-                                        }
-                                        sh "terraform apply -var-file=${config.tfvars} -auto-approve"
-                                    } else {
-                                        sh "terraform apply -auto-approve"
-                                    }
-                                }
-                            }
-                        } else {
-                            echo "⏩ Skipping module '${name}' - not enabled"
-                        }
-                    }
-                }
-            }
-        }
+      }
     }
-
-    post {
-        failure {
-            echo "❌ Terraform pipeline failed for ${env.BRANCH_NAME}"
-        }
-        success {
-            echo "✅ Terraform pipeline completed successfully for ${env.BRANCH_NAME}"
-        }
+  }
+ 
+  post {
+    failure {
+      echo "❌ Build failed!"
     }
+    success {
+      echo "✅ Build succeeded!"
+    }
+  }
 }
