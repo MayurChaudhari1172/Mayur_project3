@@ -11,8 +11,8 @@ dev:
     tfvars: application/alb/tfvars/dev.tfvars
 
   jenkins_test_node:
-      enabled: true
-      disabled: false
+      enable: true
+      disable: false
       path: Application/jenkins-test-node
       tfvars: Application/jenkins-test-node/dev.tfvars
  
