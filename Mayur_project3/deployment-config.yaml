@@ -1,56 +1,53 @@
 dev:
-  alb_with_asg:
-    enabled: true
-    disabled: false
-    path: Application/alb_with_asg
-    tfvars: Application/alb_with_asg/dev.tfvars
-
-  app_with_alb:
-    enabled: false
-    disabled: true
-    path: Application/app_with_alb
-    tfvars: Application/app_with_alb/dev.tfvars
+  ec2:
+    enable: false
+    disable: false
+    path: application/ec2
+    tfvars: application/ec2/tfvars/dev.tfvars
+  alb:
+    enable: false
+    disable: false
+    path: application/alb
+    tfvars: application/alb/tfvars/dev.tfvars
 
   jenkins_test_node:
-    enabled: true
-    disabled: false
-    path: Application/jenkins-test-node
-    tfvars: Application/jenkins-test-node/dev.tfvars
+      enable: false
+      disable: false
+      path: Mayur_project3/Application/jenkins-test-node
+      tfvars: dev.tfvars
+ 
+stage:
+  ec2:
+    enable: false
+    disable: false
+    path: application/ec2
+    tfvars: application/ec2/tfvars/staging.tfvars
+  alb:
+    enable: false
+    disable: false
+    path: application/alb
+    tfvars: application/alb/tfvars/staging.tfvars
+    
+  jenkins_test_node:
+      enable: false
+      disable: false
+      path: Mayur_project3/Application/jenkins-test-node
+      tfvars: stage.tfvars
+ 
+main:
+  ec2:
+    enable: false
+    disable: false
+    path: application/ec2
+    tfvars: application/ec2/tfvars/prod.tfvars
+  alb:
+    enable: false
+    disable: false
+    path: application/alb
+    tfvars: application/alb/tfvars/prod.tfvars
 
-# stage:
-#   alb_with_asg:
-#     enabled: true
-#     disabled: false
-#     path: Application/alb_with_asg
-#     tfvars: Application/alb_with_asg/stage.tfvars
-#
-#   app_with_alb:
-#     enabled: false
-#     disabled: true
-#     path: Application/app_with_alb
-#     tfvars: Application/app_with_alb/stage.tfvars
-#
-#   jenkins_test_node:
-#     enabled: true
-#     disabled: false
-#     path: Application/jenkins-test-node
-#     tfvars: Application/jenkins-test-node/stage.tfvars
-
-# prd:
-#   alb_with_asg:
-#     enabled: true
-#     disabled: false
-#     path: Application/alb_with_asg
-#     tfvars: Application/alb_with_asg/prod.tfvars
-#
-#   app_with_alb:
-#     enabled: false
-#     disabled: true
-#     path: Application/app_with_alb
-#     tfvars: Application/app_with_alb/prod.tfvars
-#
-#   jenkins_test_node:
-#     enabled: false
-#     disabled: true
-#     path: Application/jenkins-test-node
-#     tfvars: Application/jenkins-test-node/prod.tfvars
+  jenkins_test_node:
+      enable: true
+      disable: false
+      path: Mayur_project3/Application/jenkins-test-node
+      tfvars: main.tfvars

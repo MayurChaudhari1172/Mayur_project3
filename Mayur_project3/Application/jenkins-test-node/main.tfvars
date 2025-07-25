@@ -5,5 +5,5 @@ security_group_ids   = ["sg-0640df8db79727a94"]
 key_name             = "Key-Pair-Punam"
 iam_instance_profile = "Punam-fqts-proj3-iam-role-profile"
 name                 = "jenkins-test-node"
-project              = "project-3-devops-dev"
-environment          = "dev"
+project              = "project-3-devops-main"
+environment          = "main"
