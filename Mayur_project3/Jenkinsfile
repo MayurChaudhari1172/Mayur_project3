@@ -2,7 +2,7 @@ pipeline {
   agent any
  
   environment {
-    YAML_CONFIG = 'deployment-config.yaml'
+    YAML_CONFIG = 'Mayur_project3/deployment-config.yaml'
   }
  
   stages {
