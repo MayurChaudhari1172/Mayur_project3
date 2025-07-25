@@ -32,9 +32,15 @@ pipeline {
           def envConfig = config[env.ENV_NAME]
  
           if (envConfig == null) {
-            error "❌ No config found for environment: ${env.ENV_NAME}"
-          }
- 
+
+    if (env.BRANCH_NAME.startsWith("feature/")) {
+      echo " No config found for feature branch '${env.BRANCH_NAME}'. Skipping build."
+      currentBuild.result = 'SUCCESS'
+      return
+    } else {
+      error "❌ No config found for environment: ${env.ENV_NAME}"
+    }
+  } 
           envConfig.each { componentName, component ->
             if (component.enable == true && component.disable == false) {
               echo "🚀 Running ${env.IS_PR == 'true' ? 'terraform plan' : 'terraform apply'} for: ${componentName}"
