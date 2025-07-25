@@ -31,13 +31,13 @@ main:
       disabled: false
       path: Application/jenkins-test-node
       tfvars: Application/jenkins-test-node/main.tfvars
-feature:
-  modules:
-    jenkins_test_node:
-      enabled: true
-      disabled: false
-      path: Application/jenkins-test-node
-      tfvars: feature.tfvars
+# feature:
+#   modules:
+#     jenkins_test_node:
+#       enabled: true
+#       disabled: false
+#       path: Application/jenkins-test-node
+#       tfvars: feature.tfvars
 
 # stage:
 #   alb_with_asg:
