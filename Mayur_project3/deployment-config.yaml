@@ -29,7 +29,7 @@ stage:
     tfvars: application/alb/tfvars/staging.tfvars
     
   jenkins_test_node:
-      enable: true
+      enable: false
       disable: false
       path: Mayur_project3/Application/jenkins-test-node
       tfvars: stage.tfvars
@@ -45,3 +45,9 @@ prd:
     disable: false
     path: application/alb
     tfvars: application/alb/tfvars/prod.tfvars
+
+  jenkins_test_node:
+      enable: true
+      disable: false
+      path: Mayur_project3/Application/jenkins-test-node
+      tfvars: main.tfvars
