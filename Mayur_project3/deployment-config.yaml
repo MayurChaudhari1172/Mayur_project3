@@ -14,7 +14,7 @@ dev:
       enable: true
       disable: false
       path: Mayur_project3/Application/jenkins-test-node
-      tfvars: Mayur_project3/Application/jenkins-test-node/dev.tfvars
+      tfvars: dev.tfvars
  
 stage:
   ec2:
