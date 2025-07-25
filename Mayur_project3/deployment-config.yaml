@@ -34,7 +34,7 @@ stage:
       path: Mayur_project3/Application/jenkins-test-node
       tfvars: stage.tfvars
  
-prd:
+main:
   ec2:
     enable: false
     disable: false
