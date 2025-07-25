@@ -1,98 +1,76 @@
-def CONFIG_FILE = 'Mayur_project3/deployment-config.yaml'
-
 pipeline {
-    agent any
-
-    environment {
-        TF_VERSION = '1.7.5'
-        AWS_DEFAULT_REGION = 'us-east-1'
+  agent any
+ 
+  environment {
+    YAML_CONFIG = 'Mayur_project3/deployment-config.yaml'
+  }
+ 
+  stages {
+    stage('Init') {
+      steps {
+        script {
+          echo "🔍 Branch: ${env.BRANCH_NAME}"
+ 
+          if (env.BRANCH_NAME.startsWith("PR-")) {
+            echo "🛠️ Detected PR from '${env.CHANGE_BRANCH}' to '${env.CHANGE_TARGET}'"
+            currentBuild.displayName = "#${env.BUILD_NUMBER} - PR from ${env.CHANGE_BRANCH} to ${env.CHANGE_TARGET}"
+            env.ENV_NAME = env.CHANGE_TARGET
+            env.IS_PR = 'true'
+          } else {
+            echo "🧪 Regular branch build: ${env.BRANCH_NAME}"
+            env.ENV_NAME = env.BRANCH_NAME
+            env.IS_PR = 'false'
+          }
+        }
+      }
     }
+ 
+    stage('Terraform Plan / Apply') {
+      steps {
+        script {
+          def config = readYaml file: "${YAML_CONFIG}"
+          def envConfig = config[env.ENV_NAME]
+ 
+          if (envConfig == null) {
 
-    stages {
-        stage('Checkout') {
-            steps {
-                checkout scm
-                script {
-                    echo "🔍 Branch detected: ${env.BRANCH_NAME}"
-                    if (!fileExists(CONFIG_FILE)) {
-                        error "❌ Config file not found at ${CONFIG_FILE}"
-                    }
-                    CONFIG = readYaml(file: CONFIG_FILE)
-                }
-            }
-        }
-
-        stage('Terraform Init & Plan') {
-            when {
-                expression {
-                    return env.BRANCH_NAME?.startsWith('feature')
-                }
-            }
-            steps {
-                script {
-                    echo "🚀 Running Terraform Init & Plan for branch: ${env.BRANCH_NAME}"
-                    def modules = CONFIG['dev']  // Always use dev for plan on feature
-
-                    modules.each { name, config ->
-                        if (config.enabled && !config.disabled) {
-                            dir(config.path) {
-                                withEnv(["TF_IN_AUTOMATION=true"]) {
-                                    sh "terraform init"
-                                    if (config.containsKey('tfvars') && config.tfvars) {
-                                        sh "terraform plan -var-file=${config.tfvars} -input=false"
-                                    } else {
-                                        sh "terraform plan -input=false"
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        stage('Terraform Apply') {
-            when {
-                expression {
-                    return ['dev', 'stage', 'main'].contains(env.BRANCH_NAME)
-                }
-            }
-            steps {
-                script {
-                    echo "🚀 Running Terraform Apply for branch: ${env.BRANCH_NAME}"
-
-                    // Approval required for stage/main
-                    if (['stage', 'main'].contains(env.BRANCH_NAME)) {
-                        input message: "🔒 Approve Apply for ${env.BRANCH_NAME}?"
-                    }
-
-                    def modules = CONFIG[env.BRANCH_NAME]
-                    modules.each { name, config ->
-                        if (config.enabled && !config.disabled) {
-                            dir(config.path) {
-                                withEnv(["TF_IN_AUTOMATION=true"]) {
-                                    sh "terraform init"
-                                    if (config.containsKey('tfvars') && config.tfvars) {
-                                        sh "terraform apply -var-file=${config.tfvars} -auto-approve"
-                                    } else {
-                                        sh "terraform apply -auto-approve"
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
+    if (env.BRANCH_NAME.startsWith("feature/")) {
+      echo " No config found for feature branch '${env.BRANCH_NAME}'. Skipping build."
+      currentBuild.result = 'SUCCESS'
+      return
+    } else {
+      error "❌ No config found for environment: ${env.ENV_NAME}"
     }
-
-    post {
-        failure {
-            echo "❌ Terraform pipeline failed for ${env.BRANCH_NAME}"
+  } 
+          envConfig.each { componentName, component ->
+            if (component.enable == true && component.disable == false) {
+              echo "🚀 Running ${env.IS_PR == 'true' ? 'terraform plan' : 'terraform apply'} for: ${componentName}"
+              dir("${component.path}") {
+                sh "terraform init"
+                sh "terraform validate"
+                sh "terraform plan -var-file=${component.tfvars}"
+                if (env.IS_PR != 'true') {
+                  sh "terraform apply -auto-approve -var-file=${component.tfvars}"
+                } else {
+                  echo "💡 PR build: Skipping terraform apply"
+                }
+              }
+            } else {
+              echo "⏭️ Skipping ${componentName} (enable: ${component.enable}, disable: ${component.disable})"
+            }
+          }
         }
-        success {
-            echo "✅ Terraform pipeline completed successfully for ${env.BRANCH_NAME}"
-        }
+      }
     }
+  }
+ 
+  post {
+    failure {
+      echo "❌ Build failed!"
+    }
+    success {
+      echo "✅ Build succeeded!"
+    }
+  }
 }
-//xyz
+
+//test
