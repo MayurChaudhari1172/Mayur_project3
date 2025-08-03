@@ -1,6 +1,6 @@
 - name: Install and Configure MySQL
   hosts: tag_Name__app_alb_asg
-  become: yes
+  become: true
   vars:
     ansible_python_interpreter: /usr/bin/python3
     mysql_root_new_password: "Admin@123"
@@ -52,7 +52,7 @@
       shell: |
         mysql -uroot -p'{{ mysql_root_new_password }}' -e "SELECT 1;"
       register: mysql_root_check
-      ignore_errors: yes
+      ignore_errors: true
       no_log: true
 
     - name: Get temporary root password (only if login with new password fails)

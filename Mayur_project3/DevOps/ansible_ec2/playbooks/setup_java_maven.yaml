@@ -1,6 +1,6 @@
 - name: Install Java 17 and Maven
   hosts: tag_Name__app_alb_asg
-  become: yes
+  become: true
   tasks:
     - name: Install Java 17
       yum:
