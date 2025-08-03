@@ -1,5 +1,5 @@
 pipeline {
-  agent any
+  agent { label 'terraform' } // 🖥️ Run on passive Terraform node
  
   environment {
     YAML_CONFIG = 'Mayur_project3/deployment-config.yaml'
