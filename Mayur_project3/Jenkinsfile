@@ -70,10 +70,7 @@ pipeline {
                 } else {
                   echo "💡 PR build: Skipping terraform destroy"
                 }
-
               }
-
- 
             else {
               echo "⏭️ Skipping ${componentName} (enable: ${component.enable}, disable: ${component.disable})"
             }
@@ -82,7 +79,7 @@ pipeline {
       }
     }
   }
- 
+  
   post {
     failure {
       echo "❌ Build failed!"
