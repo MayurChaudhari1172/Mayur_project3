@@ -1,6 +1,6 @@
 - name: Build and Start Student Management Application
   hosts: tag_Name__app_alb_asg
-  become: yes
+  become: true
   vars:
     frontend_home: /opt/student_mgmt/frontend
     backend_home: /opt/student_mgmt/backend
@@ -9,7 +9,7 @@
   tasks:
     - name: Kill existing Node process (port {{ react_port }})
       shell: lsof -ti:{{ react_port }} | xargs -r kill -9
-      ignore_errors: yes
+      ignore_errors: true
 
     - name: Ensure required packages
       yum:

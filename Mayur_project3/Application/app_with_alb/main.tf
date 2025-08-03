@@ -29,14 +29,14 @@ module "alb" {
   subnet_ids      = var.subnet_ids
   security_groups = var.security_groups
 
-  tg_name     = var.tg_name
-  tg_port     = var.tg_port
-  tg_protocol = var.tg_protocol
-  tg_tags     = var.tg_tags
+  # tg_name     = var.tg_name
+  # tg_port     = var.tg_port
+  # tg_protocol = var.tg_protocol
+  # tg_tags     = var.tg_tags
 
-  listener_port        = var.listener_port
-  listener_protocol    = var.listener_protocol
-  listener_action_type = var.listener_action_type
+  listener_port     = var.listener_port
+  listener_protocol = var.listener_protocol
+  //istener_action_type = var.listener_action_type
 
   health_check_path     = var.health_check_path
   health_check_interval = var.health_check_interval
