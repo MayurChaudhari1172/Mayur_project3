@@ -12,7 +12,7 @@ pipeline {
           echo " Branch: ${env.BRANCH_NAME}"
  
           if (env.BRANCH_NAME.startsWith("PR-")) {
-            echo "🛠️ Detected PR from '${env.CHANGE_BRANCH}' to '${env.CHANGE_TARGET}'"
+            echo " Detected PR from '${env.CHANGE_BRANCH}' to '${env.CHANGE_TARGET}'"
             currentBuild.displayName = "#${env.BUILD_NUMBER} - PR from ${env.CHANGE_BRANCH} to ${env.CHANGE_TARGET}"
             env.ENV_NAME = env.CHANGE_TARGET
             env.IS_PR = 'true'
